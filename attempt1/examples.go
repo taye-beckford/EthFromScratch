@@ -19,3 +19,13 @@ func basicMemory() {
 	evm.opMstore()
 	evm.Memory.Print()
 }
+
+// func basicBytecode() {
+// 	code := Hex2Bytes("6042")
+// 	for i, op := range code {
+// 		if op == 0x60 {
+
+// 		}
+// 	}
+
+// }
