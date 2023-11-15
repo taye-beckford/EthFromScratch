@@ -13,14 +13,39 @@ func opPush1(pc *uint64, code []byte, st *Stack) {
 	st.push(*uint256.NewInt(uint64(nextByte)))
 }
 
-func opPop(st *Stack) {
+func opPop(pc *uint64, code []byte, st *Stack) {
 	st.pop()
 }
 
-func opAdd(st *Stack) {
+func opAdd(pc *uint64, code []byte, st *Stack) {
 	x := st.pop()
 	y := st.pop()
 	st.push(*y.Add(&x, &y))
+}
+
+type OpCode byte
+
+type JumpTable [256]*operation
+
+type executionFunc func(pc *uint64, code []byte, stack *Stack)
+
+type operation struct {
+	execute executionFunc
+}
+
+func newJumpTable() JumpTable {
+	tbl := JumpTable{
+		0x60: {
+			opPush1,
+		},
+		0x50: {
+			opPop,
+		},
+		0x01: {
+			opAdd,
+		},
+	}
+	return tbl
 }
 
 func main() {
@@ -33,20 +58,13 @@ func main() {
 	var (
 		stack = &Stack{}
 		pc    = uint64(0)
+		jt    = newJumpTable()
 	)
 
 	for {
 		if pc < uint64(len(code)) {
 			op := code[pc]
-			if op == 0x60 {
-				opPush1(&pc, code, stack)
-			}
-			if op == 0x50 {
-				opPop(stack)
-			}
-			if op == 0x01 {
-				opAdd(stack)
-			}
+			jt[op].execute(&pc, code, stack)
 			pc++
 		} else {
 			break
