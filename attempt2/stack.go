@@ -11,6 +11,10 @@ type Stack struct {
 	data []uint256.Int
 }
 
+func newStack() *Stack {
+	return &Stack{}
+}
+
 func (st *Stack) push(value uint256.Int) {
 	st.data = append(st.data, value)
 }

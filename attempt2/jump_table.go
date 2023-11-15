@@ -19,6 +19,15 @@ func newJumpTable() JumpTable {
 		ADD: {
 			opAdd,
 		},
+		MUL: {
+			opMul,
+		},
+		SUB: {
+			opSub,
+		},
+		DIV: {
+			opDiv,
+		},
 	}
 	return tbl
 }
