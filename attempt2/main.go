@@ -3,54 +3,54 @@ package main
 import (
 	"encoding/hex"
 	"fmt"
-	"log"
 
 	"github.com/holiman/uint256"
 )
 
-type Stack struct {
-	data []uint256.Int
+func opPush1(pc *uint64, code []byte, st *Stack) {
+	*pc++
+	nextByte := code[*pc]
+	st.push(*uint256.NewInt(uint64(nextByte)))
 }
 
-func (st *Stack) push(value uint256.Int) {
-	st.data = append(st.data, value)
+func opPop(st *Stack) {
+	st.pop()
 }
 
-func (st *Stack) pop() uint256.Int {
-	if len(st.data) == 0 {
-		log.Fatal("The Stack is empty cannot pop")
-	}
-	end := len(st.data) - 1
-	lastElement := st.data[end]
-	st.data = st.data[:end]
-	return lastElement
-}
-
-func opPush1() {
-
+func opAdd(st *Stack) {
+	x := st.pop()
+	y := st.pop()
+	st.push(*y.Add(&x, &y))
 }
 
 func main() {
-	// code, err := hex.DecodeString("60FF")
-	// if err != nil {
-	// 	fmt.Println("Failed to decode hex string")
-	// }
+	// byteCode := "60FF606050" // push and pop
+	byteCode := "600a600a01"
+	code, err := hex.DecodeString(byteCode)
+	if err != nil {
+		fmt.Println("Failed to decode hex string")
+	}
+	var (
+		stack = &Stack{}
+		pc    = uint64(0)
+	)
 
-	// for i, op := range code {
-	// 	if op == 0x60 {
-	// 		opPush1()
-	// 	}
-	// }
-
-	stack := Stack{}
-	bytes, _ := hex.DecodeString("606060606060606060")
-	var integer = new(uint256.Int)
-	integer.SetBytes(bytes)
-
-	stack.push(*integer)
-	fmt.Println(stack.data)
-	stack.push(*uint256.NewInt(100))
-	fmt.Println(stack.data)
-	stack.pop()
-	fmt.Println(stack.data)
+	for {
+		if pc < uint64(len(code)) {
+			op := code[pc]
+			if op == 0x60 {
+				opPush1(&pc, code, stack)
+			}
+			if op == 0x50 {
+				opPop(stack)
+			}
+			if op == 0x01 {
+				opAdd(stack)
+			}
+			pc++
+		} else {
+			break
+		}
+	}
+	stack.print()
 }
